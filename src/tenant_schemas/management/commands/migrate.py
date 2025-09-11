@@ -1,14 +1,13 @@
 from django.conf import settings
 from django.core.management.base import CommandError, BaseCommand
 from django.db.migrations.autodetector import MigrationAutodetector
-from django.core.management.commands.migrate import Command as DjangoMigrate
 
 from tenant_schemas.management.commands.migrate_schemas import Command as MigrateSchemasCommand
 from tenant_schemas.utils import django_is_in_test_mode
 
 
 class Command(BaseCommand):
-    autodetector = getattr(DjangoMigrate, 'autodetector', MigrationAutodetector)
+    autodetector = MigrationAutodetector
 
     def handle(self, *args, **options):
         database = options.get('database', 'default')

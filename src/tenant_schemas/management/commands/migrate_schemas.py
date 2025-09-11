@@ -11,8 +11,7 @@ from tenant_schemas.utils import (
 
 
 class Command(SyncCommon):
-    # Align with Django's migrate command so Django 5.2 command checks don't fail
-    autodetector = getattr(MigrateCommand, 'autodetector', MigrationAutodetector)
+    autodetector = MigrationAutodetector
     requires_system_checks = []
     help = (
         "Updates database schema. Manages both apps with migrations and those without."
