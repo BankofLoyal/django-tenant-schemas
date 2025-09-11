@@ -4,9 +4,13 @@ Using django-tenant-schemas
 
 Supported versions
 ------------------
-You can use ``django-tenant-schemas`` with currently maintained versions of Django -- see the `Django's release process <https://docs.djangoproject.com/en/1.11/internals/release-process/>`_ and the present list of `Supported Versions <https://www.djangoproject.com/download/#supported-versions>`_.
+``django-tenant-schemas`` supports currently maintained versions of Django and Python:
 
-It is necessary to use a PostgreSQL database. ``django-tenant-schemas`` will ensure compatibility with the minimum required version of the latest Django release. At this time that is PostgreSQL 9.3, the minimum for Django 1.11.
+- **Django**: 4.2 LTS, 5.1, 5.2 LTS
+- **Python**: 3.8, 3.9, 3.10, 3.11, 3.12, 3.13
+- **PostgreSQL**: 12+
+
+See Django's `release process <https://docs.djangoproject.com/en/dev/internals/release-process/>`_ and the present list of `Supported Versions <https://www.djangoproject.com/download/#supported-versions>`_.
 
 Creating a Tenant
 -----------------
@@ -38,7 +42,7 @@ Now we can create our first real tenant.
                     on_trial=True)
     tenant.save() # migrate_schemas automatically called, your tenant is ready to be used!
 
-Because you have the tenant middleware installed, any request made to ``tenant.my-domain.com`` will now automatically set your PostgreSQL's ``search_path`` to ``tenant1, public``, making shared apps available too. The tenant will be made available at ``request.tenant``. By the way, the current schema is also available at ``connection.schema_name``, which is useful, for example, if you want to hook to any of django's signals.
+Because you have the tenant middleware installed, any request made to ``tenant.my-domain.com`` will now automatically set your PostgreSQL's ``search_path`` to ``tenant, public``, making shared apps available too. The tenant will be made available at ``request.tenant``. By the way, the current schema is also available at ``connection.schema_name``, which is useful, for example, if you want to hook to any of django's signals.
 
 Any call to the methods ``filter``, ``get``, ``save``, ``delete`` or any other function involving a database connection will now be done at the tenant's schema, so you shouldn't need to change anything at your views.
 
@@ -140,7 +144,7 @@ The command ``createsuperuser`` is already automatically wrapped to have a ``sch
 
 .. code-block:: bash
 
-    ./manage.py createsuperuser --username=admin --schema=customer1
+    ./manage.py tenant_command createsuperuser --username=admin --schema=customer1
 
 
 list_tenants
@@ -169,7 +173,15 @@ To avoid this you should configure a tenant aware storage backend - you will be 
 
     MEDIA_ROOT = '/data/media'
     MEDIA_URL = '/media/'
-    DEFAULT_FILE_STORAGE = 'tenant_schemas.storage.TenantFileSystemStorage'
+    
+    STORAGES = {
+        "default": {
+            "BACKEND": "tenant_schemas.storage.TenantFileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "tenant_schemas.storage.TenantFileSystemStorage",
+        },
+    }
 
 We provide :class:`tenant_schemas.storage.TenantStorageMixin` which can be added to any third-party storage backend.
 
@@ -221,7 +233,7 @@ This is a context manager. Database queries performed inside it will be executed
 
 .. function:: tenant_context(tenant_object)
 
-This context manager is very similiar to the ``schema_context`` function,
+This context manager is very similar to the ``schema_context`` function,
 but it takes a tenant model object as the argument instead.
 
 .. code-block:: python
