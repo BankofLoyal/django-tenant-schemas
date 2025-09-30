@@ -28,6 +28,15 @@ def run_migrations(args, options, executor_codename, schema_name, allow_atomic=T
         stdout.write(style.NOTICE("=== Running migrate for schema %s" % schema_name))
 
     connection.set_schema(schema_name)
+    # This code handles database migrations for both public and tenant schemas in a multi-tenant Django application.
+    # The run_migrations function executes migrations for a specific schema with proper transaction handling.
+    # The MigrationExecutor class provides a base implementation for running migrations across multiple tenants,
+    # ensuring the public schema is migrated first before tenant schemas.     
+    defaults = {
+        "skip_checks": False,
+    }
+    for key, value in defaults.items():
+        options.setdefault(key, value)
     MigrateCommand(stdout=stdout, stderr=stderr).execute(*args, **options)
 
     try:
